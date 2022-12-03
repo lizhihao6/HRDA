@@ -5,6 +5,7 @@ from collections import OrderedDict
 import mmcv
 import numpy as np
 import torch
+from tqdm import trange
 
 
 def f_score(precision, recall, beta=1):
@@ -119,7 +120,7 @@ def total_intersect_and_union(results,
     total_area_union = torch.zeros((num_classes, ), dtype=torch.float64)
     total_area_pred_label = torch.zeros((num_classes, ), dtype=torch.float64)
     total_area_label = torch.zeros((num_classes, ), dtype=torch.float64)
-    for i in range(num_imgs):
+    for i in trange(num_imgs):
         area_intersect, area_union, area_pred_label, area_label = \
             intersect_and_union(
                 results[i], gt_seg_maps[i], num_classes, ignore_index,

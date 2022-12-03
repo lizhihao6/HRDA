@@ -17,7 +17,7 @@ from . import CityscapesDataset
 from .builder import DATASETS
 
 
-def get_rcs_class_probs(data_root, temperature):
+def get_rcs_class_probs(data_root, temperature, used_classes_idx):
     with open(osp.join(data_root, 'sample_class_stats.json'), 'r') as of:
         sample_class_stats = json.load(of)
     overall_class_stats = {}
@@ -25,10 +25,14 @@ def get_rcs_class_probs(data_root, temperature):
         s.pop('file')
         for c, n in s.items():
             c = int(c)
-            if c not in overall_class_stats:
-                overall_class_stats[c] = n
+            if c not in used_classes_idx:
+                continue
             else:
-                overall_class_stats[c] += n
+                _c = used_classes_idx.index(c)
+                if _c not in overall_class_stats:
+                    overall_class_stats[_c] = n
+                else:
+                    overall_class_stats[_c] += n
     overall_class_stats = {
         k: v
         for k, v in sorted(
@@ -65,20 +69,21 @@ class UDADataset(object):
         self.ignore_index = target.ignore_index
         self.CLASSES = target.CLASSES
         self.PALETTE = target.PALETTE
-        assert target.ignore_index == source.ignore_index
-        assert target.CLASSES == source.CLASSES
-        assert target.PALETTE == source.PALETTE
+        # assert target.ignore_index == source.ignore_index
+        # assert target.CLASSES == source.CLASSES
+        # assert target.PALETTE == source.PALETTE
 
         self.sync_crop_size = cfg.get('sync_crop_size')
         rcs_cfg = cfg.get('rare_class_sampling')
         self.rcs_enabled = rcs_cfg is not None
         if self.rcs_enabled:
+            self.used_classes_idx = rcs_cfg.get('used_classes_idx')
             self.rcs_class_temp = rcs_cfg['class_temp']
             self.rcs_min_crop_ratio = rcs_cfg['min_crop_ratio']
             self.rcs_min_pixels = rcs_cfg['min_pixels']
 
             self.rcs_classes, self.rcs_classprob = get_rcs_class_probs(
-                cfg['source']['data_root'], self.rcs_class_temp)
+                cfg['source']['data_root'], self.rcs_class_temp, self.used_classes_idx)
             mmcv.print_log(f'RCS Classes: {self.rcs_classes}', 'mmseg')
             mmcv.print_log(f'RCS ClassProb: {self.rcs_classprob}', 'mmseg')
 
@@ -87,9 +92,9 @@ class UDADataset(object):
                              'samples_with_class.json'), 'r') as of:
                 samples_with_class_and_n = json.load(of)
             samples_with_class_and_n = {
-                int(k): v
+                self.used_classes_idx.index(int(k)): v
                 for k, v in samples_with_class_and_n.items()
-                if int(k) in self.rcs_classes
+                if int(k) in self.used_classes_idx
             }
             self.samples_with_class = {}
             for c in self.rcs_classes:

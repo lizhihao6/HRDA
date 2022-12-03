@@ -6,6 +6,7 @@ from .mix_transformer import (MixVisionTransformer, mit_b0, mit_b1, mit_b2,
 from .resnest import ResNeSt
 from .resnet import ResNet, ResNetV1c, ResNetV1d
 from .resnext import ResNeXt
+from .hrnet import HRNet
 
 __all__ = [
     'ResNet',

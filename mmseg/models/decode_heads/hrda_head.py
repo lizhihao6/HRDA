@@ -64,6 +64,12 @@ class HRDAHead(BaseDecodeHead):
             kwargs.pop('dilations')
             kwargs['channels'] = 1
             self.os = 8
+        elif single_scale_head == 'FCNHead':
+            kwargs['init_cfg'] = None
+            kwargs.pop('kernel_size')
+            kwargs.pop('num_convs')
+            kwargs.pop('concat_input')
+            self.os = 4
         else:
             raise NotImplementedError(single_scale_head)
         super(HRDAHead, self).__init__(**kwargs)

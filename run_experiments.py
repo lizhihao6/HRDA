@@ -54,7 +54,7 @@ if __name__ == '__main__':
     assert (args.config is None) != (args.exp is None), \
         'Either config or exp has to be defined.'
 
-    GEN_CONFIG_DIR = 'configs/generated/'
+    GEN_CONFIG_DIR = 'exp_configs/generated/'
     JOB_DIR = 'jobs'
     cfgs, config_files = [], []
 
@@ -66,7 +66,7 @@ if __name__ == '__main__':
         unique_name = f'{datetime.now().strftime("%y%m%d_%H%M")}_' \
                       f'{cfg["name"]}_{str(uuid.uuid4())[:5]}'
         child_cfg = {
-            '_base_': args.config.replace('configs', '../..'),
+            '_base_': args.config.replace('exp_configs', '../..'),
             'name': unique_name,
             'work_dir': os.path.join('work_dirs', exp_name, unique_name),
             'git_rev': get_git_hash()
